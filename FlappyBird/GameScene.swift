@@ -34,6 +34,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
     // スコア
     var score = 0
+    var scoreLabelNode:SKLabelNode!    // ←追加
+    var bestScoreLabelNode:SKLabelNode!    // ←追加
+    
+    let userDefaults:UserDefaults = UserDefaults.standard    // 追加
 
     // SKView上にシーンが表示されたときに呼ばれるメソッド
     override func didMove(to view: SKView) {
@@ -57,7 +61,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         setupCloud()
         setupWall()   // 追加
         setupBird()   // 追加
-
+        setupScoreLabel()   // 追加
+    }
+    func setupScoreLabel() {
+        score = 0
+        scoreLabelNode = SKLabelNode()
+        scoreLabelNode.fontColor = UIColor.black
+        scoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 60)
+        scoreLabelNode.zPosition = 100 // 一番手前に表示する
+        scoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        scoreLabelNode.text = "Score:\(score)"
+        self.addChild(scoreLabelNode)
+        
+        bestScoreLabelNode = SKLabelNode()
+        bestScoreLabelNode.fontColor = UIColor.black
+        bestScoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
+        bestScoreLabelNode.zPosition = 100 // 一番手前に表示する
+        bestScoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        
+        let bestScore = userDefaults.integer(forKey: "BEST")
+        bestScoreLabelNode.text = "Best Score:\(bestScore)"
+        self.addChild(bestScoreLabelNode)
     }
     // 画面をタップした時に呼ばれる
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -122,7 +146,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     }*/
     func restart() {
         score = 0
-        
+        scoreLabelNode.text = String("Score:\(score)")    // ←追加
+
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
@@ -133,6 +158,66 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         bird.speed = 1
         scrollNode.speed = 1
     }
+    /*// SKPhysicsContactDelegateのメソッド。衝突したときに呼ばれる
+    func didBegin(_ contact: SKPhysicsContact) {
+        // ゲームオーバーのときは何もしない
+        if scrollNode.speed <= 0 {
+            return
+        }
+        
+        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
+            // スコア用の物体と衝突した
+            print("ScoreUp")
+            score += 1
+        } else {
+            // 壁か地面と衝突した
+            print("GameOver")
+            
+            // スクロールを停止させる
+            scrollNode.speed = 0
+            
+            bird.physicsBody?.collisionBitMask = groundCategory
+            
+            let roll = SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1)
+            bird.run(roll, completion:{
+                self.bird.speed = 0
+            })
+        }
+    }*/
+    /*// SKPhysicsContactDelegateのメソッド。衝突したときに呼ばれる
+    func didBegin(_ contact: SKPhysicsContact) {
+        // ゲームオーバーのときは何もしない
+        if scrollNode.speed <= 0 {
+            return
+        }
+        
+        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
+            // スコア用の物体と衝突した
+            print("ScoreUp")
+            score += 1
+            
+            // ベストスコア更新か確認する --- ここから ---
+            var bestScore = userDefaults.integer(forKey: "BEST")
+            if score > bestScore {
+                bestScore = score
+                userDefaults.set(bestScore, forKey: "BEST")
+                userDefaults.synchronize()
+            } // --- ここまで追加---
+        } else {
+            // 壁か地面と衝突した
+            print("GameOver")
+            
+            // スクロールを停止させる
+            scrollNode.speed = 0
+            
+            bird.physicsBody?.collisionBitMask = groundCategory
+            
+            let roll = SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1)
+            bird.run(roll, completion:{
+                self.bird.speed = 0
+            })
+        }
+    }*/
     // SKPhysicsContactDelegateのメソッド。衝突したときに呼ばれる
     func didBegin(_ contact: SKPhysicsContact) {
         // ゲームオーバーのときは何もしない
@@ -144,6 +229,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             // スコア用の物体と衝突した
             print("ScoreUp")
             score += 1
+            scoreLabelNode.text = "Score:\(score)"    // ←追加
+            
+            
+            // ベストスコア更新か確認する
+            var bestScore = userDefaults.integer(forKey: "BEST")
+            if score > bestScore {
+                bestScore = score
+                bestScoreLabelNode.text = "Best Score:\(bestScore)"    // ←追加
+                userDefaults.set(bestScore, forKey: "BEST")
+                userDefaults.synchronize()
+            }
         } else {
             // 壁か地面と衝突した
             print("GameOver")
