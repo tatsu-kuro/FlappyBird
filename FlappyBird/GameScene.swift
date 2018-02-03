@@ -51,11 +51,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         scrollNode.addChild(wallNode)   // 追加
         scrollNode.addChild(mimizuNode)
         // 各種スプライトを生成する処理をメソッドに分割
- //       setupGround()
+        setupGround()
        setupCloud()
         setupWall()   // 追加
         setupMimizu()
-//        setupBird()   // 追加
+        setupBird()   // 追加
         setupScoreLabel()   // 追加
 
     }
@@ -355,7 +355,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             upper.physicsBody?.isDynamic = false
             
             wall.addChild(upper)
- /*
+ 
             // スコアアップ用のノード --- ここから ---
             let scoreNode = SKNode()
             scoreNode.position = CGPoint(x: upper.size.width + self.bird.size.width / 2, y: self.frame.height / 2.0)
@@ -366,7 +366,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             
             wall.addChild(scoreNode)
             // --- ここまで追加 ---
-   */
+   
             wall.run(wallAnimation)
             
             self.wallNode.addChild(wall)
