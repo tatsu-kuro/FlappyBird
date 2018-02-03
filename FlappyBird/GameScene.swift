@@ -9,19 +9,7 @@
 
 import UIKit
 import SpriteKit
-/*
- class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
- 
- var scrollNode:SKNode!
- var wallNode:SKNode!
- var bird:SKSpriteNode!
- 
- // 衝突判定カテゴリー ↓追加
- let birdCategory: UInt32 = 1 << 0       // 0...00001
- let groundCategory: UInt32 = 1 << 1     // 0...00010
- let wallCategory: UInt32 = 1 << 2       // 0...00100
- let scoreCategory: UInt32 = 1 << 3      // 0...01000
-*/
+
 class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     
     var scrollNode:SKNode!
@@ -36,9 +24,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     let mimizuCategory: UInt32 = 1 << 4
     // スコア
     var score = 0
-    var esascore = 0
+    var mimizuscore = 0
     var mimizu_y:CGFloat = 0
     var scoreLabelNode:SKLabelNode!    // ←追加
+    var mimizuLabelNode:SKLabelNode!
     var bestScoreLabelNode:SKLabelNode!    // ←追加
     
     let userDefaults:UserDefaults = UserDefaults.standard    // 追加
@@ -62,18 +51,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         scrollNode.addChild(wallNode)   // 追加
         scrollNode.addChild(mimizuNode)
         // 各種スプライトを生成する処理をメソッドに分割
-        setupGround()
-        setupCloud()
+ //       setupGround()
+       setupCloud()
         setupWall()   // 追加
         setupMimizu()
-        setupBird()   // 追加
+//        setupBird()   // 追加
         setupScoreLabel()   // 追加
 
     }
  
     func setupScoreLabel() {
         score = 0
-        esascore = 0
+        mimizuscore = 0
         scoreLabelNode = SKLabelNode()
         scoreLabelNode.fontColor = UIColor.black
         scoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 60)
@@ -82,13 +71,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         scoreLabelNode.text = "Score:\(score)"
         self.addChild(scoreLabelNode)
         
-        scoreLabelNode = SKLabelNode()
-        scoreLabelNode.fontColor = UIColor.black
-        scoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
-        scoreLabelNode.zPosition = 100 // 一番手前に表示する
-        scoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        scoreLabelNode.text = "EsaScore:\(score)"
-        self.addChild(scoreLabelNode)
+        mimizuLabelNode = SKLabelNode()
+        mimizuLabelNode.fontColor = UIColor.black
+        mimizuLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
+        mimizuLabelNode.zPosition = 100 // 一番手前に表示する
+        mimizuLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        mimizuLabelNode.text = "Mimizu:\(score)"
+        self.addChild(mimizuLabelNode)
 
         bestScoreLabelNode = SKLabelNode()
         bestScoreLabelNode.fontColor = UIColor.black
@@ -228,6 +217,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         let repeatScrollCloud = SKAction.repeatForever(SKAction.sequence([moveCloud, resetCloud]))
         
         // スプライトを配置する
+ 
         for i in 0..<needCloudNumber {
             let sprite = SKSpriteNode(texture: cloudTexture)
             sprite.zPosition = -100 // 一番後ろになるようにする
@@ -245,96 +235,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             scrollNode.addChild(sprite)
         }
     }
- /*
-    func setupMimizu1(){
-        // 壁の画像を読み込む
-        let wallTexture = SKTexture(imageNamed: "mimizu")
-        wallTexture.filteringMode = .linear
-        
-        // 移動する距離を計算
-        let movingDistance = CGFloat(self.frame.size.width + wallTexture.size().width)
-        
-        // 画面外まで移動するアクションを作成
-        let moveWall = SKAction.moveBy(x: -movingDistance, y: 0, duration:4.0)
-        
-        // 自身を取り除くアクションを作成
-        let removeWall = SKAction.removeFromParent()
-        
-        // 2つのアニメーションを順に実行するアクションを作成
-        let wallAnimation = SKAction.sequence([moveWall, removeWall])
-        
-        // 壁を生成するアクションを作成
-        let createWallAnimation = SKAction.run({
-            // 壁関連のノードを乗せるノードを作成
-            let wall = SKNode()
-            wall.position = CGPoint(x: self.frame.size.width + wallTexture.size().width / 2, y: 0.0)
-            wall.zPosition = -50.0 // 雲より手前、地面より奥
-            
-            // 画面のY軸の中央値
-            let center_y = self.frame.size.height / 2
-            // 壁のY座標を上下ランダムにさせるときの最大値
-            let random_y_range = self.frame.size.height / 4
-            // 下の壁のY軸の下限
-            let under_wall_lowest_y = UInt32( center_y - wallTexture.size().height / 2 -  random_y_range / 2)
-            // 1〜random_y_rangeまでのランダムな整数を生成
-            let random_y = arc4random_uniform( UInt32(random_y_range) )
-            // Y軸の下限にランダムな値を足して、下の壁のY座標を決定
-            let under_wall_y = CGFloat(under_wall_lowest_y + random_y)
-            
-            // キャラが通り抜ける隙間の長さ
-            let slit_length = self.frame.size.height / 6
-            
-            // 下側の壁を作成
-            let under = SKSpriteNode(texture: wallTexture)
-            under.position = CGPoint(x: 0.0, y: under_wall_y)
-            wall.addChild(under)
-            
-            // スプライトに物理演算を設定する
-            under.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
-            under.physicsBody?.categoryBitMask = self.wallCategory    // ←追加
-            
-            // 衝突の時に動かないように設定する
-            under.physicsBody?.isDynamic = false
-            
-            // 上側の壁を作成
-            let upper = SKSpriteNode(texture: wallTexture)
-            upper.position = CGPoint(x: 0.0, y: under_wall_y + wallTexture.size().height + slit_length)
-            
-            // スプライトに物理演算を設定する
-            upper.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
-            upper.physicsBody?.categoryBitMask = self.wallCategory    // ←追加
-            
-            // 衝突の時に動かないように設定する
-            upper.physicsBody?.isDynamic = false
-            
-            wall.addChild(upper)
-            
-            // スコアアップ用のノード --- ここから ---
-            let scoreNode = SKNode()
-            scoreNode.position = CGPoint(x: upper.size.width + self.bird.size.width / 2, y: self.frame.height / 2.0)
-            scoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: upper.size.width, height: self.frame.size.height))
-            scoreNode.physicsBody?.isDynamic = false
-            scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
-            scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
-            
-            wall.addChild(scoreNode)
-            // --- ここまで追加 ---
-            
-            wall.run(wallAnimation)
-            
-            self.mimizuNode.addChild(wall)
-        })
-        
-        // 次の壁作成までの待ち時間のアクションを作成
-        let waitAnimation = SKAction.wait(forDuration: 2)
-        
-        // 壁を作成->待ち時間->壁を作成を無限に繰り替えるアクションを作成
-        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createWallAnimation, waitAnimation]))
-        
-        mimizuNode.run(repeatForeverAnimation)
-        
-        
-    }*/
+
     func setupMimizu(){
         // 壁の画像を読み込む
         let mimizuTexture = SKTexture(imageNamed: "mimizu")
@@ -356,7 +257,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         let createMimizuAnimation = SKAction.run({
             // 壁関連のノードを乗せるノードを作成
             let mimizu = SKNode()
-            mimizu.position = CGPoint(x: self.frame.size.width + mimizuTexture.size().width / 2, y: 50.0)
+  //          mimizu.position = CGPoint(x: self.frame.size.width - mimizuTexture.size().width , y: 50.0)
+            mimizu.position = CGPoint(x: self.frame.size.width + mimizuTexture.size().width/2 , y: 50.0)
             
             mimizu.zPosition = -50.0 // 雲より手前、地面より奥
   
@@ -427,8 +329,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             
             // キャラが通り抜ける隙間の長さ
             let slit_length = self.frame.size.height / 6
-            let mimizu_random_y = arc4random_uniform( UInt32(slit_length))
-            self.mimizu_y = under_wall_y + self.frame.size.height/5 + CGFloat(mimizu_random_y)
+            let mimizu_random_y = arc4random_uniform( UInt32(slit_length - wallTexture.size().width/2))
+            self.mimizu_y = under_wall_y + self.frame.size.height/5 + wallTexture.size().width/3 + CGFloat(mimizu_random_y)
             // 下側の壁を作成
             let under = SKSpriteNode(texture: wallTexture)
             under.position = CGPoint(x: 0.0, y: under_wall_y)
@@ -453,7 +355,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             upper.physicsBody?.isDynamic = false
             
             wall.addChild(upper)
-            
+ /*
             // スコアアップ用のノード --- ここから ---
             let scoreNode = SKNode()
             scoreNode.position = CGPoint(x: upper.size.width + self.bird.size.width / 2, y: self.frame.height / 2.0)
@@ -464,7 +366,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             
             wall.addChild(scoreNode)
             // --- ここまで追加 ---
-            
+   */
             wall.run(wallAnimation)
             
             self.wallNode.addChild(wall)
@@ -478,30 +380,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         
         wallNode.run(repeatForeverAnimation)
     }
-   /* // 以下追加
-    func setupBird() {
-        // 鳥の画像を2種類読み込む
-        let birdTextureA = SKTexture(imageNamed: "bird_a")
-        birdTextureA.filteringMode = .linear
-        let birdTextureB = SKTexture(imageNamed: "bird_b")
-        birdTextureB.filteringMode = .linear
-        
-        // 2種類のテクスチャを交互に変更するアニメーションを作成
-        let texuresAnimation = SKAction.animate(with: [birdTextureA, birdTextureB], timePerFrame: 0.2)
-        let flap = SKAction.repeatForever(texuresAnimation)
   
-        // スプライトを作成
-        bird = SKSpriteNode(texture: birdTextureA)
-        bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
-        // 物理演算を設定
-        bird.physicsBody = SKPhysicsBody(circleOfRadius: bird.size.height / 2.0)    // ←追加
-
-        // アニメーションを設定
-        bird.run(flap)
-        
-        // スプライトを追加する
-        addChild(bird)
-    }*/
     func setupBird() {
         // 鳥の画像を2種類読み込む
         let birdTextureA = SKTexture(imageNamed: "bird_a")
