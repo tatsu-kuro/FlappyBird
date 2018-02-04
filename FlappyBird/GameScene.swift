@@ -9,23 +9,23 @@
 
 import UIKit
 import SpriteKit
-
+import AVFoundation
 class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
-    
+    var audioPlayerClear : AVAudioPlayer! = nil //クリア時用
     var scrollNode:SKNode!
     var wallNode:SKNode!    // 追加
-    var mimizuNode:SKNode!
+    var mimizu:SKSpriteNode!
     var bird:SKSpriteNode!    // 追加
     // 衝突判定カテゴリー ↓追加
     let birdCategory: UInt32 = 1 << 0       // 0...00001
     let groundCategory: UInt32 = 1 << 1     // 0...00010
     let wallCategory: UInt32 = 1 << 2       // 0...00100
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
-    let mimizuCategory: UInt32 = 1 << 4
+    let mimizuscoreCategory: UInt32 = 1 << 4
     // スコア
     var score = 0
     var mimizuscore = 0
-    var mimizu_y:CGFloat = 0
+//    var mimizu_y:CGFloat = 0
     var scoreLabelNode:SKLabelNode!    // ←追加
     var mimizuLabelNode:SKLabelNode!
     var bestScoreLabelNode:SKLabelNode!    // ←追加
@@ -37,7 +37,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         // 重力を設定
         physicsWorld.gravity = CGVector(dx: 0.0, dy: -4.0)    // ←追加
         physicsWorld.contactDelegate = self // ←追加
-
+        makeSound()
         // 背景色を設定
         backgroundColor = UIColor(red: 0.15, green: 0.75, blue: 0.90, alpha: 1)
         
@@ -47,14 +47,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         
         // 壁用のノード
         wallNode = SKNode()   // 追加
-        mimizuNode = SKNode()
         scrollNode.addChild(wallNode)   // 追加
-        scrollNode.addChild(mimizuNode)
         // 各種スプライトを生成する処理をメソッドに分割
         setupGround()
-       setupCloud()
+        setupCloud()
         setupWall()   // 追加
-        setupMimizu()
         setupBird()   // 追加
         setupScoreLabel()   // 追加
 
@@ -104,8 +101,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     
     func restart() {
         score = 0
+        mimizuscore = 0
         scoreLabelNode.text = String("Score:\(score)")    // ←追加
-
+        mimizuLabelNode.text = String("Mimizu:\(score)")
+        
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
@@ -125,11 +124,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         }
         
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
-            // スコア用の物体と衝突した
-            print("ScoreUp")
+        //if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
+        //    (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+            // スコア用の物体と衝突している
+           print("ScoreUp")
             score += 1
             scoreLabelNode.text = "Score:\(score)"    // ←追加
-            
             
             // ベストスコア更新か確認する
             var bestScore = userDefaults.integer(forKey: "BEST")
@@ -139,8 +139,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
                 userDefaults.set(bestScore, forKey: "BEST")
                 userDefaults.synchronize()
             }
-        } else {
-            // 壁か地面と衝突した
+        }
+        else if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
+            (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+                print("mimizuGet")
+                mimizuscore += 1
+                mimizuLabelNode.text = "Mimizu:\(mimizuscore)"
+                self.mimizu.run(SKAction.fadeOut(withDuration: 0.1))
+            self.audioPlayerClear.play()
+        } else {   // 壁か地面と衝突した
             print("GameOver")
             
             // スクロールを停止させる
@@ -236,62 +243,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         }
     }
 
-    func setupMimizu(){
-        // 壁の画像を読み込む
-        let mimizuTexture = SKTexture(imageNamed: "mimizu")
-        mimizuTexture.filteringMode = .linear
-        
-        // 移動する距離を計算
-        let movingDistance = CGFloat(self.frame.size.width + mimizuTexture.size().width)
-        
-        // 画面外まで移動するアクションを作成
-        let moveMimizu = SKAction.moveBy(x: -movingDistance, y: 0, duration:4.0)
-        
-        // 自身を取り除くアクションを作成
-        let removeMimizu = SKAction.removeFromParent()
-        
-        // 2つのアニメーションを順に実行するアクションを作成
-        let mimizuAnimation = SKAction.sequence([moveMimizu, removeMimizu])
-        
-        // 壁を生成するアクションを作成
-        let createMimizuAnimation = SKAction.run({
-            // 壁関連のノードを乗せるノードを作成
-            let mimizu = SKNode()
-  //          mimizu.position = CGPoint(x: self.frame.size.width - mimizuTexture.size().width , y: 50.0)
-            mimizu.position = CGPoint(x: self.frame.size.width + mimizuTexture.size().width/2 , y: 50.0)
-            
-            mimizu.zPosition = -50.0 // 雲より手前、地面より奥
-  
-            // 画面のY軸の中央値
-  //          let center_y = self.frame.size.height / 2
- 
-            // 下側の壁を作成
-            let mimi = SKSpriteNode(texture: mimizuTexture)
-//            mimi.position = CGPoint(x: 0.0, y: center_y)
-            mimi.position = CGPoint(x: 0.0, y: self.mimizu_y)
-            mimizu.addChild(mimi)
-     
-            // スプライトに物理演算を設定する
-  //          mimi.physicsBody = SKPhysicsBody(rectangleOf: mimizuTexture.size())
-  //          mimi.physicsBody?.categoryBitMask = self.mimizuCategory    // ←追加
-            
-            // 衝突の時に動かないように設定する
-            mimi.physicsBody?.isDynamic = false
-            
-            mimizu.run(mimizuAnimation)
-            
-            self.mimizuNode.addChild(mimizu)
-        })
-        
-        // 次の壁作成までの待ち時間のアクションを作成
-        let waitAnimation = SKAction.wait(forDuration: 2)//2
-        
-        // 壁を作成->待ち時間->壁を作成を無限に繰り替えるアクションを作成
-        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createMimizuAnimation, waitAnimation]))
-        mimizuNode.run(repeatForeverAnimation)
-        
-    }
-    
     func setupWall() {
         // 壁の画像を読み込む
         let wallTexture = SKTexture(imageNamed: "wall")
@@ -329,9 +280,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             
             // キャラが通り抜ける隙間の長さ
             let slit_length = self.frame.size.height / 6
-            let mimizu_random_y = arc4random_uniform( UInt32(slit_length - wallTexture.size().width/2))
-            self.mimizu_y = under_wall_y + self.frame.size.height/5 + wallTexture.size().width/3 + CGFloat(mimizu_random_y)
-            // 下側の壁を作成
+             // 下側の壁を作成
             let under = SKSpriteNode(texture: wallTexture)
             under.position = CGPoint(x: 0.0, y: under_wall_y)
             wall.addChild(under)
@@ -346,6 +295,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             // 上側の壁を作成
             let upper = SKSpriteNode(texture: wallTexture)
             upper.position = CGPoint(x: 0.0, y: under_wall_y + wallTexture.size().height + slit_length)
+            wall.addChild(upper)
             
             // スプライトに物理演算を設定する
             upper.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
@@ -354,8 +304,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             // 衝突の時に動かないように設定する
             upper.physicsBody?.isDynamic = false
             
-            wall.addChild(upper)
- 
+            //みみずを作成
+//            var mimizuNode:SKNode!
+
+            let mimizuTexture = SKTexture(imageNamed: "mimizu")
+            mimizuTexture.filteringMode = .linear
+            self.mimizu = SKSpriteNode(texture: mimizuTexture)
+  //          let mimizu = SKNode(texture: mimizuTexture)
+            let mimizu_random_y = arc4random_uniform( UInt32(slit_length - mimizuTexture.size().height))
+            let mimizu_y = under_wall_y + wallTexture.size().height - slit_length + mimizuTexture.size().width/2 - CGFloat(mimizu_random_y)
+            self.mimizu.position = CGPoint(x:0.0,y:mimizu_y)
+            wall.addChild(self.mimizu)
+            
+//            mimizu.physicsBody = SKPhysicsBody(rectangleOf:mimizuTexture.size())
+            self.mimizu.physicsBody = SKPhysicsBody(circleOfRadius: self.mimizu.size.height / 2.0)
+            self.mimizu.physicsBody?.categoryBitMask=self.mimizuscoreCategory
+            self.mimizu.physicsBody?.contactTestBitMask=self.birdCategory
+  //          mimizu.physicsBody?.isDynamic = false
+   //         mimizu.physicsBody.
             // スコアアップ用のノード --- ここから ---
             let scoreNode = SKNode()
             scoreNode.position = CGPoint(x: upper.size.width + self.bird.size.width / 2, y: self.frame.height / 2.0)
@@ -365,7 +331,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
             
             wall.addChild(scoreNode)
-            // --- ここまで追加 ---
+           // --- ここまで追加 ---
    
             wall.run(wallAnimation)
             
@@ -413,6 +379,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         
         // スプライトを追加する
         addChild(bird)
+    }
+    // MARK: サウンドファイル作成
+    func makeSound() {
+        //Clear音作る。
+        
+        //音声ファイルのパスを作る。
+        let soundFilePathClear : NSString = Bundle.main.path(forResource: "decision-1", ofType: "mp3")! as NSString
+        let soundClear : NSURL = NSURL(fileURLWithPath: soundFilePathClear as String)
+        //AVAudioPlayerのインスタンス化
+        do{
+            audioPlayerClear = try AVAudioPlayer(contentsOf: soundClear as URL, fileTypeHint:nil)
+        }catch{
+            print("Failed AVAudioPlayer Instance")
+        }
+        //出来たインスタンスをバッファに保持する。
+        audioPlayerClear.prepareToPlay()
     }
 }
 

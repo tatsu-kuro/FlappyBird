@@ -10,6 +10,8 @@
 		8E00E25B2025E4AD001C8243 /* mimizu@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E00E2582025E4AD001C8243 /* mimizu@3x.png */; };
 		8E00E25C2025E4AD001C8243 /* mimizu.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E00E2592025E4AD001C8243 /* mimizu.png */; };
 		8E00E25D2025E4AD001C8243 /* mimizu@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E00E25A2025E4AD001C8243 /* mimizu@2x.png */; };
+		8E4ED8102026D1EB00942F36 /* decision-8.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8E4ED80F2026D1EA00942F36 /* decision-8.mp3 */; };
+		8E4ED8122026D33000942F36 /* decision-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8E4ED8112026D33000942F36 /* decision-1.mp3 */; };
 		8EB2A11920235BCE0056DEE5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EB2A11820235BCE0056DEE5 /* AppDelegate.swift */; };
 		8EB2A11B20235BCE0056DEE5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EB2A11A20235BCE0056DEE5 /* ViewController.swift */; };
 		8EB2A11E20235BCE0056DEE5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EB2A11C20235BCE0056DEE5 /* Main.storyboard */; };
@@ -37,6 +39,8 @@
 		8E00E2582025E4AD001C8243 /* mimizu@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mimizu@3x.png"; sourceTree = "<group>"; };
 		8E00E2592025E4AD001C8243 /* mimizu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mimizu.png; sourceTree = "<group>"; };
 		8E00E25A2025E4AD001C8243 /* mimizu@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mimizu@2x.png"; sourceTree = "<group>"; };
+		8E4ED80F2026D1EA00942F36 /* decision-8.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "decision-8.mp3"; sourceTree = "<group>"; };
+		8E4ED8112026D33000942F36 /* decision-1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "decision-1.mp3"; sourceTree = "<group>"; };
 		8EB2A11520235BCE0056DEE5 /* FlappyBird.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlappyBird.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EB2A11820235BCE0056DEE5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8EB2A11A20235BCE0056DEE5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -73,11 +77,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8E4ED8092026CF3300942F36 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8EB2A10C20235BCE0056DEE5 = {
 			isa = PBXGroup;
 			children = (
 				8EB2A11720235BCE0056DEE5 /* FlappyBird */,
 				8EB2A11620235BCE0056DEE5 /* Products */,
+				8E4ED8092026CF3300942F36 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,6 +108,8 @@
 				8EB2A11820235BCE0056DEE5 /* AppDelegate.swift */,
 				8EB2A11A20235BCE0056DEE5 /* ViewController.swift */,
 				8EB2A11C20235BCE0056DEE5 /* Main.storyboard */,
+				8E4ED80F2026D1EA00942F36 /* decision-8.mp3 */,
+				8E4ED8112026D33000942F36 /* decision-1.mp3 */,
 				8E00E2592025E4AD001C8243 /* mimizu.png */,
 				8E00E25A2025E4AD001C8243 /* mimizu@2x.png */,
 				8E00E2582025E4AD001C8243 /* mimizu@3x.png */,
@@ -191,8 +205,10 @@
 				8EB2A13D20235D550056DEE5 /* bird_b@3x.png in Resources */,
 				8EB2A13E20235D550056DEE5 /* bird_a@3x.png in Resources */,
 				8EB2A14520235D550056DEE5 /* wall@3x.png in Resources */,
+				8E4ED8102026D1EB00942F36 /* decision-8.mp3 in Resources */,
 				8EB2A14620235D550056DEE5 /* ground@3x.png in Resources */,
 				8E00E25D2025E4AD001C8243 /* mimizu@2x.png in Resources */,
+				8E4ED8122026D33000942F36 /* decision-1.mp3 in Resources */,
 				8EB2A14320235D550056DEE5 /* bird_b@2x.png in Resources */,
 				8EB2A14120235D550056DEE5 /* cloud@2x.png in Resources */,
 				8EB2A12020235BCE0056DEE5 /* Assets.xcassets in Resources */,
