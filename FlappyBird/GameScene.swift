@@ -31,7 +31,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     var bestScoreLabelNode:SKLabelNode!    // ←追加
     
     let userDefaults:UserDefaults = UserDefaults.standard    // 追加
-    var time0 = Date().timeIntervalSince1970
+    var time0_score = Date().timeIntervalSince1970
+    var time0_mimizu = Date().timeIntervalSince1970
     // SKView上にシーンが表示されたときに呼ばれるメソッド
     override func didMove(to view: SKView) {
         // 重力を設定
@@ -123,36 +124,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             return
         }
         
-        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
-            // スコア用の物体と衝突している
-           print("ScoreUp")
-            score += 1
-            scoreLabelNode.text = "Score:\(score)"    // ←追加
-            
-            // ベストスコア更新か確認する
-            var bestScore = userDefaults.integer(forKey: "BEST")
-            if score > bestScore {
-                bestScore = score
-                bestScoreLabelNode.text = "Best Score:\(bestScore)"    // ←追加
-                userDefaults.set(bestScore, forKey: "BEST")
-                userDefaults.synchronize()
-            }
-        }
-        else if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
+        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory ||
+            (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
             (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
-            if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
-                contact.bodyA.node?.run(SKAction.fadeOut(withDuration: 0.1))
-            } else {
-                contact.bodyB.node?.run(SKAction.fadeOut(withDuration: 0.1))
-            }
+            // スコア用の物体と衝突している
             let time = Date().timeIntervalSince1970
-            if time > time0 + 1.0 {
-                print("mimizuGet \(time) \(time0) ")
-                mimizuscore += 1
-                mimizuLabelNode.text = "Mimizu:\(mimizuscore)"
- //               mimizu.run(SKAction.fadeOut(withDuration: 0.1))
-                self.audioPlayerClear.play()
-                self.time0 = Date().timeIntervalSince1970
+            if time > time0_score + 1.0{
+                print("ScoreUp")
+                score += 1
+                scoreLabelNode.text = "Score:\(score)"    // ←追加
+                
+                // ベストスコア更新か確認する
+                var bestScore = userDefaults.integer(forKey: "BEST")
+                if score > bestScore {
+                    bestScore = score
+                    bestScoreLabelNode.text = "Best Score:\(bestScore)"    // ←追加
+                    userDefaults.set(bestScore, forKey: "BEST")
+                    userDefaults.synchronize()
+                }
+                time0_score = Date().timeIntervalSince1970
+            }
+            if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
+                (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+                if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+                    contact.bodyA.node?.run(SKAction.fadeOut(withDuration: 0.1))
+                } else {
+                    contact.bodyB.node?.run(SKAction.fadeOut(withDuration: 0.1))
+                }
+                if time > time0_mimizu + 1.0 {
+ //                   print("mimizuGet \(time) \(time0) ")
+                    mimizuscore += 1
+                    mimizuLabelNode.text = "Mimizu:\(mimizuscore)"
+ //                 mimizu.run(SKAction.fadeOut(withDuration: 0.1))
+                    self.audioPlayerClear.play()
+                    time0_mimizu = Date().timeIntervalSince1970
+                }
             }
         } else {   // 壁か地面と衝突した
             print("GameOver")
