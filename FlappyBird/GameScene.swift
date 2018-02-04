@@ -14,7 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     var audioPlayerClear : AVAudioPlayer! = nil //クリア時用
     var scrollNode:SKNode!
     var wallNode:SKNode!    // 追加
-    var mimizu:SKSpriteNode!
+//    var mimizu:SKSpriteNode!
     var bird:SKSpriteNode!    // 追加
     // 衝突判定カテゴリー ↓追加
     let birdCategory: UInt32 = 1 << 0       // 0...00001
@@ -124,8 +124,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         }
         
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
-        //if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
-        //    (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
             // スコア用の物体と衝突している
            print("ScoreUp")
             score += 1
@@ -142,12 +140,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         }
         else if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
             (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+            if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
+                contact.bodyA.node?.run(SKAction.fadeOut(withDuration: 0.1))
+            } else {
+                contact.bodyB.node?.run(SKAction.fadeOut(withDuration: 0.1))
+            }
             let time = Date().timeIntervalSince1970
             if time > time0 + 1.0 {
                 print("mimizuGet \(time) \(time0) ")
                 mimizuscore += 1
                 mimizuLabelNode.text = "Mimizu:\(mimizuscore)"
-                self.mimizu.run(SKAction.fadeOut(withDuration: 0.1))
+ //               mimizu.run(SKAction.fadeOut(withDuration: 0.1))
                 self.audioPlayerClear.play()
                 self.time0 = Date().timeIntervalSince1970
             }
@@ -313,17 +316,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
 
             let mimizuTexture = SKTexture(imageNamed: "mimizu")
             mimizuTexture.filteringMode = .linear
-            self.mimizu = SKSpriteNode(texture: mimizuTexture)
+            let mimizu = SKSpriteNode(texture: mimizuTexture)
   //          let mimizu = SKNode(texture: mimizuTexture)
             let mimizu_random_y = arc4random_uniform( UInt32(slit_length - mimizuTexture.size().height))
             let mimizu_y = under_wall_y + wallTexture.size().height - slit_length + mimizuTexture.size().width/2 - CGFloat(mimizu_random_y)
-            self.mimizu.position = CGPoint(x:0.0,y:mimizu_y)
-            wall.addChild(self.mimizu)
+            mimizu.position = CGPoint(x:0.0,y:mimizu_y)
+            wall.addChild(mimizu)
             
 //            mimizu.physicsBody = SKPhysicsBody(rectangleOf:mimizuTexture.size())
-            self.mimizu.physicsBody = SKPhysicsBody(circleOfRadius: self.mimizu.size.height / 2.0)
-            self.mimizu.physicsBody?.categoryBitMask=self.mimizuscoreCategory
-            self.mimizu.physicsBody?.contactTestBitMask=self.birdCategory
+            mimizu.physicsBody = SKPhysicsBody(circleOfRadius: mimizu.size.height / 2.0)
+            mimizu.physicsBody?.categoryBitMask=self.mimizuscoreCategory
+            mimizu.physicsBody?.contactTestBitMask=self.birdCategory
+            mimizu.physicsBody?.isDynamic = false
   //          mimizu.physicsBody?.isDynamic = false
    //         mimizu.physicsBody.
             // スコアアップ用のノード --- ここから ---
@@ -375,8 +379,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         // 衝突のカテゴリー設定
         bird.physicsBody?.categoryBitMask = birdCategory    // ←追加
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory    // ←追加
-        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory    // ←追加
- //       bird.physicsBody?.eatMimizuBitMask = 
+        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory
+            //| mimizuscoreCategory// ←追加
         
         // アニメーションを設定
         bird.run(flap)
