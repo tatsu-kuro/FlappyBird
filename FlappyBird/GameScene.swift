@@ -31,7 +31,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     var bestScoreLabelNode:SKLabelNode!    // ←追加
     
     let userDefaults:UserDefaults = UserDefaults.standard    // 追加
-
+    var time0 = Date().timeIntervalSince1970
     // SKView上にシーンが表示されたときに呼ばれるメソッド
     override func didMove(to view: SKView) {
         // 重力を設定
@@ -142,11 +142,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
         }
         else if (contact.bodyA.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory ||
             (contact.bodyB.categoryBitMask & mimizuscoreCategory) == mimizuscoreCategory {
-                print("mimizuGet")
+            let time = Date().timeIntervalSince1970
+            if time > time0 + 1.0 {
+                print("mimizuGet \(time) \(time0) ")
                 mimizuscore += 1
                 mimizuLabelNode.text = "Mimizu:\(mimizuscore)"
                 self.mimizu.run(SKAction.fadeOut(withDuration: 0.1))
-            self.audioPlayerClear.play()
+                self.audioPlayerClear.play()
+                self.time0 = Date().timeIntervalSince1970
+            }
         } else {   // 壁か地面と衝突した
             print("GameOver")
             
